@@ -1,0 +1,27 @@
+.project-page-container {
+    padding: 20px;
+    text-align: center;
+}
+
+.project-page-container h1 {
+    margin-bottom: 20px;
+}
+
+.project-page-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.project-page-container li {
+    margin: 10px 0;
+}
+
+.project-page-container a {
+    text-decoration: none;
+    color: #007bff;
+    font-size: 18px;
+}
+
+.project-page-container a:hover {
+    text-decoration: underline;
+}
