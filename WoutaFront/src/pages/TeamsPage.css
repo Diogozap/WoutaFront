@@ -6,14 +6,14 @@
     text-align: center;
     max-width: 1200px;
     margin: auto;
-  }
-  
-  h1 {
+}
+
+h1 {
     margin-bottom: 2rem;
     font-size: 2.5rem;
-  }
-  
-  .empty-state {
+}
+
+.empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -23,13 +23,13 @@
     padding: 4rem;
     border-radius: 10px;
     transition: background-color 0.3s ease;
-  }
-  
-  .empty-state:hover {
+}
+
+.empty-state:hover {
     background-color: #e0e0e0;
-  }
-  
-  .add-circle {
+}
+
+.add-circle {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -40,16 +40,16 @@
     color: white;
     font-size: 2rem;
     margin-bottom: 1rem;
-  }
-  
-  .teams-list {
+}
+
+.teams-list {
     display: flex;
     flex-wrap: wrap;
     gap: 1.5rem;
     justify-content: center;
-  }
-  
-  .team-card {
+}
+
+.team-card {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -60,25 +60,25 @@
     color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
-  }
-  
-  .team-card:hover {
+}
+
+.team-card:hover {
     transform: translateY(-5px);
-  }
-  
-  .team-header {
+}
+
+.team-header {
     display: flex;
     justify-content: space-between;
     width: 100%;
-  }
-  
-  .actions-menu {
+}
+
+.actions-menu {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-  }
-  
-  .actions-menu button {
+}
+
+.actions-menu button {
     background-color: #007bff;
     border: none;
     padding: 0.5rem;
@@ -86,43 +86,43 @@
     color: white;
     font-size: 0.9rem;
     cursor: pointer;
-  }
-  
-  .actions-menu button:hover {
+}
+
+.actions-menu button:hover {
     background-color: #0056b3;
-  }
-  
-  .members-list {
+}
+
+.members-list {
     margin-top: 1rem;
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     justify-content: center;
-  }
-  
-  .member-tag {
+}
+
+.member-tag {
     background-color: rgba(255, 255, 255, 0.3);
     padding: 0.4rem 0.8rem;
     border-radius: 5px;
     font-size: 0.9rem;
     position: relative;
     cursor: pointer;
-  }
-  
-  .icon {
+}
+
+.icon {
     margin-left: 5px;
     cursor: pointer;
-  }
-  
-  .icon.edit {
+}
+
+.icon.edit {
     color: #ffcc00;
-  }
-  
-  .icon.delete {
+}
+
+.icon.delete {
     color: #ff0000;
-  }
-  
-  .add-team {
+}
+
+.add-team {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -132,12 +132,12 @@
     padding: 1rem;
     border-radius: 5px;
     cursor: pointer;
-  }
-  
-  .add-team:hover {
+}
+
+.add-team:hover {
     background-color: #218838;
-  }
-  
+}
+
 /* Estilos responsivos */
 @media (max-width: 768px) {
     .teams-list {
@@ -176,5 +176,3 @@
         padding: 0.4rem 0.6rem;
     }
 }
-
-
