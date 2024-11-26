@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./ProjectPage.css";
+import { apiProjetos } from "../api/Api";
 
 const ProjectPage = () => {
   const [projects, setProjects] = useState([]);
-  const [hoveredMember, setHoveredMember] = useState(null);
-  const [hoveredTask, setHoveredTask] = useState(null);
-
+  const [newProjectName, setNewProjectName] = useState("");
+  const [newProjectDescription, setNewProjectDescription] = useState("");
   const projectNameMaxLength = 30;
-  const memberNameMaxLength = 15;
-  const taskNameMaxLength = 50;
+  const projectDescriptionMaxLength = 100;
 
   const getRandomColor = () => {
     const letters = "0123456789ABCDEF";
@@ -19,127 +19,130 @@ const ProjectPage = () => {
     return color;
   };
 
-  const addProject = () => {
-    const projectName = prompt("Digite o nome do novo projeto:");
-    const projectDescription = prompt("Digite a descrição do projeto:");
-
-    if (!projectName || projectName.trim() === "" || !projectDescription) {
-      alert("Nome e descrição do projeto não podem ser vazios.");
+  // Função para buscar projetos do backend
+  const fetchProjects = async () => {
+    const token = localStorage.getItem('token');  // Obtém o token armazenado no localStorage
+    if (!token) {
+      alert("Você precisa estar autenticado para acessar os projetos.");
       return;
     }
 
-    if (projectName.length > projectNameMaxLength) {
+    try {
+      const response = await apiProjetos.getProjetos();
+      setProjects(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar projetos:", error);
+      if (error.response && error.response.status === 401) {
+        alert("Sessão expirada. Por favor, faça login novamente.");
+      } else {
+        alert("Erro ao buscar projetos.");
+      }
+    }
+  };
+
+  // Função para adicionar um novo projeto
+  const addProject = async () => {
+    if (!newProjectName || !newProjectDescription) {
+      alert("Nome e descrição do projeto são obrigatórios.");
+      return;
+    }
+
+    if (newProjectName.length > projectNameMaxLength) {
       alert(`O nome do projeto não pode ter mais de ${projectNameMaxLength} caracteres.`);
       return;
     }
 
-    const projectExists = projects.some(
-      (project) => project.name.toLowerCase() === projectName.toLowerCase()
-    );
-
-    if (projectExists) {
-      alert("Já existe um projeto com esse nome.");
+    if (newProjectDescription.length > projectDescriptionMaxLength) {
+      alert(`A descrição do projeto não pode ter mais de ${projectDescriptionMaxLength} caracteres.`);
       return;
     }
 
     const newProject = {
-      id: Date.now(),
-      name: projectName,
-      description: projectDescription,
+      titulo: newProjectName,
+      description: newProjectDescription,
       color: getRandomColor(),
-      members: [],
-      tasks: [],
     };
 
-    setProjects([...projects, newProject]);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("Você precisa estar autenticado para criar um projeto.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "https://sistemadegerenciamentodeprojetosback.onrender.com/restrito/projetos/",
+        newProject,
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`,  // Adiciona o token no cabeçalho
+          },
+        }
+      );
+      setProjects([...projects, response.data]); // Adicionar o novo projeto na lista
+      setNewProjectName(""); // Limpar o campo de nome
+      setNewProjectDescription(""); // Limpar o campo de descrição
+    } catch (error) {
+      console.error("Erro ao criar projeto:", error);
+      alert("Erro ao criar o projeto.");
+    }
   };
 
-  const addMember = (projectId) => {
-    const memberName = prompt("Digite o nome do novo integrante:");
-    if (!memberName || memberName.trim() === "") {
-      alert("O nome do integrante não pode ser vazio.");
-      return;
-    }
-
-    if (memberName.length > memberNameMaxLength) {
-      alert(`O nome do integrante não pode ter mais de ${memberNameMaxLength} caracteres.`);
-      return;
-    }
-
-    setProjects((prevProjects) =>
-      prevProjects.map((project) =>
-        project.id === projectId
-          ? {
-              ...project,
-              members: project.members.includes(memberName)
-                ? (alert("Este integrante já está no projeto."), project.members)
-                : [...project.members, memberName],
-            }
-          : project
-      )
-    );
-  };
-
-  const addTask = (projectId) => {
-    const taskName = prompt("Digite o nome da nova tarefa:");
-    if (!taskName || taskName.trim() === "") {
-      alert("O nome da tarefa não pode ser vazio.");
-      return;
-    }
-
-    if (taskName.length > taskNameMaxLength) {
-      alert(`O nome da tarefa não pode ter mais de ${taskNameMaxLength} caracteres.`);
-      return;
-    }
-
-    setProjects((prevProjects) =>
-      prevProjects.map((project) =>
-        project.id === projectId
-          ? {
-              ...project,
-              tasks: project.tasks.includes(taskName)
-                ? (alert("Essa tarefa já existe no projeto."), project.tasks)
-                : [...project.tasks, taskName],
-            }
-          : project
-      )
-    );
-  };
-
-  const deleteProject = (id) => {
+  // Função para excluir um projeto
+  const deleteProject = async (projectId) => {
     const confirmDelete = window.confirm("Tem certeza que deseja excluir este projeto?");
     if (confirmDelete) {
-      setProjects(projects.filter((project) => project.id !== id));
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("Você precisa estar autenticado para excluir um projeto.");
+        return;
+      }
+
+      try {
+        await axios.delete(
+          `https://sistemadegerenciamentodeprojetosback.onrender.com/restrito/projetos/${projectId}/`,
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`,  // Adiciona o token no cabeçalho
+            },
+          }
+        );
+        setProjects(projects.filter((project) => project.id !== projectId));
+      } catch (error) {
+        console.error("Erro ao excluir o projeto:", error);
+        alert("Erro ao excluir o projeto.");
+      }
     }
   };
 
-  const deleteMember = (projectId, memberName) => {
-    setProjects((prevProjects) =>
-      prevProjects.map((project) =>
-        project.id === projectId
-          ? { ...project, members: project.members.filter((member) => member !== memberName) }
-          : project
-      )
-    );
-  };
-
-  const deleteTask = (projectId, taskName) => {
-    setProjects((prevProjects) =>
-      prevProjects.map((project) =>
-        project.id === projectId
-          ? { ...project, tasks: project.tasks.filter((task) => task !== taskName) }
-          : project
-      )
-    );
-  };
+  // UseEffect para buscar os projetos ao carregar a página
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
   return (
     <div className="projects-container">
       <h1>Projetos</h1>
+      
+      <div className="add-project-form">
+        <input
+          type="text"
+          placeholder="Nome do Projeto"
+          value={newProjectName}
+          onChange={(e) => setNewProjectName(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Descrição do Projeto"
+          value={newProjectDescription}
+          onChange={(e) => setNewProjectDescription(e.target.value)}
+        />
+        <button onClick={addProject}>Adicionar Novo Projeto</button>
+      </div>
+
       {projects.length === 0 ? (
-        <div className="empty-state" onClick={addProject}>
-          <div className="add-circle">+</div>
-          <p>Criar novo projeto</p>
+        <div className="empty-state">
+          <p>Nenhum projeto encontrado. Adicione um novo projeto acima.</p>
         </div>
       ) : (
         <div className="projects-list">
@@ -151,54 +154,9 @@ const ProjectPage = () => {
             >
               <h3>{project.name}</h3>
               <p>{project.description}</p>
-              <div className="members-list">
-                {project.members.map((member, index) => (
-                  <span
-                    key={index}
-                    onMouseEnter={() => setHoveredMember(member)}
-                    onMouseLeave={() => setHoveredMember(null)}
-                  >
-                    {hoveredMember === member ? (
-                      <span
-                        onClick={() => deleteMember(project.id, member)}
-                        className="delete-icon"
-                      >
-                        ❌
-                      </span>
-                    ) : (
-                      member
-                    )}
-                  </span>
-                ))}
-              </div>
-              <button onClick={() => addMember(project.id)}>Adicionar Integrante</button>
-              <div className="tasks-list">
-                {project.tasks.map((task, index) => (
-                  <span
-                    key={index}
-                    onMouseEnter={() => setHoveredTask(task)}
-                    onMouseLeave={() => setHoveredTask(null)}
-                  >
-                    {hoveredTask === task ? (
-                      <span
-                        onClick={() => deleteTask(project.id, task)}
-                        className="delete-icon"
-                      >
-                        ❌
-                      </span>
-                    ) : (
-                      task
-                    )}
-                  </span>
-                ))}
-              </div>
-              <button onClick={() => addTask(project.id)}>Adicionar Tarefa</button>
               <button onClick={() => deleteProject(project.id)}>Excluir Projeto</button>
             </div>
           ))}
-          <div className="add-project" onClick={addProject}>
-            <span>+ Novo Projeto</span>
-          </div>
         </div>
       )}
     </div>

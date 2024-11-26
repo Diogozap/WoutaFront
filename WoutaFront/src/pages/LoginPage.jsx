@@ -31,12 +31,16 @@ const LoginPage = () => {
       );
 
       // Sucesso: Armazenar o token JWT no localStorage e redirecionar
-      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("token", response.data.access);
       navigate("/home");
     } catch (err) {
       if (err.response) {
+        if (err.response.data.detail === "No active account found with the given credentials") {
+          setError("Nenhuma conta ativa encontrada com as credenciais fornecidas.");
+        } else {
         // Erro da resposta do servidor
         setError(err.response.data.detail || "Erro ao fazer login.");
+        }
       } else {
         // Erro na conexão ou outra falha
         setError("Erro ao conectar com o servidor.");
