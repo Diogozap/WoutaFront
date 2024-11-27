@@ -77,7 +77,6 @@ const ProjectPage = () => {
       usuarios: newProjectUsers.split(',').map(user => user.trim()), // Divide usuários em um array de IDs
       prazo: newProjectPrazo,
       status: newProjectStatus,
-      color: getRandomColor(), // Atribui uma cor aleatória ao projeto
     };
 
     const token = localStorage.getItem('token');
