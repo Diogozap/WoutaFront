@@ -7,9 +7,13 @@ const ProjectPage = () => {
   const [projects, setProjects] = useState([]);
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectDescription, setNewProjectDescription] = useState("");
+  const [newProjectUsers, setNewProjectUsers] = useState("");
+  const [newProjectPrazo, setNewProjectPrazo] = useState("");
+  const [newProjectStatus, setNewProjectStatus] = useState("");
   const projectNameMaxLength = 30;
   const projectDescriptionMaxLength = 100;
 
+  // Função para gerar uma cor aleatória
   const getRandomColor = () => {
     const letters = "0123456789ABCDEF";
     let color = "#";
@@ -21,7 +25,7 @@ const ProjectPage = () => {
 
   // Função para buscar projetos do backend
   const fetchProjects = async () => {
-    const token = localStorage.getItem('token');  // Obtém o token armazenado no localStorage
+    const token = localStorage.getItem('token'); // Obtém o token armazenado no localStorage
     if (!token) {
       alert("Você precisa estar autenticado para acessar os projetos.");
       return;
@@ -57,10 +61,23 @@ const ProjectPage = () => {
       return;
     }
 
+    // Validação de formato de data (exemplo básico)
+    const isValidDate = (date) => {
+      return /\d{4}-\d{2}-\d{2}/.test(date); // Formato YYYY-MM-DD
+    };
+
+    if (newProjectPrazo && !isValidDate(newProjectPrazo)) {
+      alert("Formato de data inválido. Use o formato YYYY-MM-DD.");
+      return;
+    }
+
     const newProject = {
       titulo: newProjectName,
       description: newProjectDescription,
-      color: getRandomColor(),
+      usuarios: newProjectUsers.split(',').map(user => user.trim()), // Divide usuários em um array de IDs
+      prazo: newProjectPrazo,
+      status: newProjectStatus,
+      color: getRandomColor(), // Atribui uma cor aleatória ao projeto
     };
 
     const token = localStorage.getItem('token');
@@ -75,13 +92,16 @@ const ProjectPage = () => {
         newProject,
         {
           headers: {
-            "Authorization": `Bearer ${token}`,  // Adiciona o token no cabeçalho
+            "Authorization": `Bearer ${token}`,
           },
         }
       );
-      setProjects([...projects, response.data]); // Adicionar o novo projeto na lista
-      setNewProjectName(""); // Limpar o campo de nome
-      setNewProjectDescription(""); // Limpar o campo de descrição
+      setProjects([...projects, response.data]); // Adiciona o novo projeto à lista de projetos
+      setNewProjectName(""); // Limpa o campo de nome
+      setNewProjectDescription(""); // Limpa o campo de descrição
+      setNewProjectUsers(""); // Limpa o campo de usuários
+      setNewProjectPrazo(""); // Limpa o campo de prazo
+      setNewProjectStatus(""); // Limpa o campo de status
     } catch (error) {
       console.error("Erro ao criar projeto:", error);
       alert("Erro ao criar o projeto.");
@@ -103,11 +123,11 @@ const ProjectPage = () => {
           `https://sistemadegerenciamentodeprojetosback.onrender.com/restrito/projetos/${projectId}/`,
           {
             headers: {
-              "Authorization": `Bearer ${token}`,  // Adiciona o token no cabeçalho
+              "Authorization": `Bearer ${token}`,
             },
           }
         );
-        setProjects(projects.filter((project) => project.id !== projectId));
+        setProjects(projects.filter((project) => project.id !== projectId)); // Remove o projeto excluído
       } catch (error) {
         console.error("Erro ao excluir o projeto:", error);
         alert("Erro ao excluir o projeto.");
@@ -123,7 +143,7 @@ const ProjectPage = () => {
   return (
     <div className="projects-container">
       <h1>Projetos</h1>
-      
+
       <div className="add-project-form">
         <input
           type="text"
@@ -136,6 +156,24 @@ const ProjectPage = () => {
           placeholder="Descrição do Projeto"
           value={newProjectDescription}
           onChange={(e) => setNewProjectDescription(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Usuários (IDs separados por vírgula)"
+          value={newProjectUsers}
+          onChange={(e) => setNewProjectUsers(e.target.value)}
+        />
+        <input
+          type="date"
+          placeholder="Prazo (YYYY-MM-DD)"
+          value={newProjectPrazo}
+          onChange={(e) => setNewProjectPrazo(e.target.value)}
+        />
+        <input
+          type="text"
+          placeholder="Status (opcional)"
+          value={newProjectStatus}
+          onChange={(e) => setNewProjectStatus(e.target.value)}
         />
         <button onClick={addProject}>Adicionar Novo Projeto</button>
       </div>
@@ -150,11 +188,12 @@ const ProjectPage = () => {
             <div
               key={project.id}
               className="project-card"
-              style={{ backgroundColor: project.color }}
+              style={{ backgroundColor: project.color }} // Exibe a cor aleatória
             >
-              <h3>{project.name}</h3>
-              <p>{project.description}</p>
-              <button onClick={() => deleteProject(project.id)}>Excluir Projeto</button>
+              <h3>{project.titulo}</h3> {/* Exibe o título */}
+              <p>{project.description}</p> {/* Exibe a descrição */}
+              <p>Status: {project.status}</p> {/* Exibe o status */}
+              <button onClick={() => deleteProject(project.id)}>Excluir</button> {/* Exclui o projeto */}
             </div>
           ))}
         </div>
